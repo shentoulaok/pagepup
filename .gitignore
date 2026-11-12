@@ -1,0 +1,10 @@
+.bili-ai/
+.dsh/
+credentials.json
+bili-notification-webhook.json
+pagepup-network.json
+*.log
+.env*
+node_modules/
+pagepup-credentials.json
+pagepup-signed-out

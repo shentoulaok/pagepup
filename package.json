@@ -1,0 +1,6 @@
+{
+  "name": "pagepup-bilibili",
+  "private": true,
+  "engines": { "node": ">=24" },
+  "dependencies": { "qrcode": "1.5.4" }
+}

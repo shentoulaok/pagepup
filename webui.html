@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PagePup WebUI</title>
+<link rel="icon" href="/mascot.png">
+<style>
+:root{color-scheme:dark;--bg:#111718;--panel:#1a2325;--line:#2c3b3e;--muted:#a7b9ba;--text:#f1f6f5;--accent:#80dbc6;--track:#344548}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Inter","Microsoft YaHei",sans-serif;display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+aside{background:#161e20;border-right:1px solid var(--line);padding:30px 20px}
+.brand{display:flex;align-items:center;gap:12px;margin:0 0 34px;font-size:23px;font-weight:750}.brand img{width:42px;height:42px;object-fit:contain}
+nav{display:grid;gap:8px}nav a{padding:11px 14px;border-radius:9px;color:var(--muted);text-decoration:none}nav a:hover,nav a[aria-current]{background:#243b39;color:var(--accent)}
+main{width:min(100%,1230px);padding:36px 44px 48px;margin:auto;align-self:start}
+h1,h2,p{margin:0}h1{font-size:30px;letter-spacing:-.035em}h2{font-size:17px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
+#mode{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:1fr 1.25fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:23px;min-width:0}
+.identity{display:flex;align-items:center;gap:16px;margin-bottom:17px}.identity img{width:80px;height:80px;object-fit:contain}.identity p{color:var(--muted);margin-top:3px}
+aside{display:flex;flex-direction:column}.sidebar-session{margin-top:auto;padding-top:22px}.sidebar-session button{width:100%}.sidebar-session p{font-size:12px;color:var(--muted)}.identity .avatar{width:62px;height:62px;border-radius:50%;object-fit:cover}
+@media(max-width:550px){.sidebar-session{padding-top:0;margin-top:0}aside{flex-direction:row;flex-wrap:wrap}}
+dl{margin:0}dl div{display:flex;justify-content:space-between;gap:14px;border-top:1px solid var(--line);padding:12px 0}dl div:last-child{padding-bottom:0}dt{color:var(--muted)}dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.resources{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;text-align:center}.resource{min-width:0}.resource p{color:var(--muted);font-size:13px;margin-top:8px}
+.ring{--usage:0%;--ring:var(--accent);width:min(100%,132px);aspect-ratio:1;position:relative;margin:auto;border-radius:50%;background:conic-gradient(var(--ring) var(--usage),var(--track) 0);display:grid;place-items:center}
+.ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--panel)}.ring span{position:relative;font-size:25px;font-weight:700;font-variant-numeric:tabular-nums}.memory{--ring:#efb476}
+.stats{margin-top:16px}.stats h2,#logs h2{margin-bottom:12px}#logs{margin-top:16px;scroll-margin-top:16px}.event{display:grid;grid-template-columns:85px 1fr;gap:12px;border-top:1px solid var(--line);padding:9px 0}.event time{color:var(--muted);font-variant-numeric:tabular-nums}.empty{color:var(--muted)}
+.about-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start}.about-grid h2{margin-bottom:12px}.about-grid p+p,.about-grid li+li{margin-top:10px}.about-grid ol{padding-inline-start:24px;margin-bottom:0}
+.group-link{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:9px;background:#243b39;color:var(--text);text-decoration:none}.group-link:hover,.group-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.group-link small{display:block;color:var(--muted)}.group-link span:last-child{white-space:nowrap;color:var(--accent)}
+@media(max-width:750px){.about-grid{grid-template-columns:1fr}}
+[hidden]{display:none!important}button,input{font:inherit}button{cursor:pointer;background:#243b39;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 14px}button:hover{border-color:var(--accent)}button:disabled{opacity:.5;cursor:wait}
+.toolbar,.actions,.network-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.network-title{justify-content:space-between;margin-bottom:16px}.network-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}.network-grid .card{max-width:500px}.network-grid dd{overflow-wrap:anywhere}.actions{margin-top:15px}.network-meta{margin:12px 0;color:var(--muted)}.danger{color:#ffacaa}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:15px;padding:24px;width:min(460px,calc(100vw - 32px))}dialog::backdrop{background:#080e10b0}dialog label{display:grid;gap:5px;margin:14px 0;color:var(--muted)}input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);color:var(--text)}.switch[aria-checked=true]{color:var(--accent)}
+@media(max-width:850px){body{grid-template-columns:155px 1fr}aside{padding:20px 12px}main{padding:24px}.grid{grid-template-columns:1fr}}
+@media(max-width:550px){body{display:block}aside{padding:12px 18px;border-right:0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}.brand{margin:0;font-size:19px}.brand img{width:32px;height:32px}nav{display:flex;gap:2px}nav a{padding:7px;font-size:13px}main{padding:18px}.card{padding:17px}}
+.login-screen{grid-column:1/-1;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 22% 26%,#21413a,transparent 60%),var(--bg)}
+.login-card{width:min(100%,460px);padding:clamp(24px,6vw,44px);text-align:center;box-shadow:0 18px 60px #05090970}
+.login-brand{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:24px}
+.login-brand img{width:88px;height:88px;object-fit:contain}
+.login-brand h1{font-size:clamp(23px,5vw,36px);text-align:left}
+.login-brand h1 span{display:block;color:var(--accent)}
+.login-card p{color:var(--muted);margin-bottom:18px}
+.login-card button{width:100%;border-radius:999px;padding:11px 18px;background:var(--accent);color:#102521;font-weight:750}
+.login-card #loginFeedback{margin:12px 0 0;color:#ffacaa}
+.login-card #loginFeedback:empty{display:none}
+.login-qr{display:block;width:min(100%,248px);height:auto;aspect-ratio:1;margin:0 auto 18px;border-radius:10px;background:white}
+</style>
+<aside id="dashboardSidebar">
+  <div class="brand"><img src="/mascot.png" alt="">PagePup</div>
+  <nav aria-label="管理菜单"><a href="#overview" aria-current="location">基础信息</a><a href="#network">网络配置</a><a href="#logs">狗狗日志</a><a href="#about">关于我们</a></nav>
+  <div class="sidebar-session"><button id="accountAction" disabled>退出登录</button><p id="accountFeedback" role="status"></p></div>
+</aside>
+<main id="dashboard">
+  <div id="overview">
+  <header><h1>基础信息</h1><span id="mode"></span></header>
+  <div class="grid">
+    <section class="card" aria-label="监听状态">
+      <div class="identity"><img id="accountAvatar" class="avatar" src="/mascot.png" alt="" referrerpolicy="no-referrer"><div><h2 id="accountName">B 站账号</h2><p id="accountUid">读取中</p></div></div>
+      <dl>
+        <div><dt>B 站连接</dt><dd id="connection">读取中</dd></div>
+        <div><dt>最近通知</dt><dd id="notification">—</dd></div>
+        <div><dt>本机转发</dt><dd id="forwarding">—</dd></div>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>系统资源</h2>
+      <div class="resources">
+        <div class="resource"><div class="ring" id="cpuRing"><span id="cpu">—</span></div><p>CPU 占用</p></div>
+        <div class="resource"><div class="ring memory" id="memoryRing"><span id="memory">—</span></div><p id="memoryDetail">内存占用</p></div>
+      </div>
+    </section>
+  </div>
+  <section class="card stats"><h2>运行环境</h2><dl><div><dt>Node.js</dt><dd id="node">—</dd></div><div><dt>操作系统</dt><dd id="system">—</dd></div></dl></section>
+  </div>
+  <section id="network" hidden>
+    <header><h1>网络配置</h1></header>
+    <div class="toolbar"><button id="newNetwork">＋ 新建</button><button id="reloadNetwork">刷新</button></div>
+    <p class="network-meta">HTTP 客户端 · 向本机接收端转发私信通知</p>
+    <p id="networkFeedback" class="network-meta" role="status"></p>
+    <div id="networkCards" class="network-grid"></div>
+    <dialog id="networkDialog">
+      <form id="networkForm">
+        <h2 id="networkFormTitle">新建 HTTP 客户端</h2>
+        <label>名称<input name="name" required maxlength="80"></label>
+        <label>接收地址<input name="url" required type="url"></label>
+        <label>访问令牌<input name="token" type="password" autocomplete="off" pattern="[a-f0-9]{64}"></label>
+        <p id="networkError" class="network-meta" role="alert"></p>
+        <div class="actions"><button type="submit">保存</button><button type="button" id="cancelNetwork">取消</button></div>
+      </form>
+    </dialog>
+  </section>
+  <section class="card" id="logs" hidden><h2>狗狗日志</h2><div id="events"><p class="empty">暂无记录</p></div></section>
+  <section id="about" hidden>
+    <header><h1>关于 PagePup</h1></header>
+    <div class="about-grid">
+      <section class="card">
+        <h2>项目简介</h2>
+        <p>PagePup 个是一个 B 站私信通知监听器。由于没有现成的b站普通私信接入工具，借鉴 NapCat，做了一个能在电脑上独立运行的程序。通过 WebSocket 接收 B 站的私信通知，再用 HTTP 通知本机程序查信。运行时不用开着 B 站网页，也不用连接手机。项目附带一个本机管理页，可以查看连接状态、配置转发地址和调试端口。</p>
+        <p>此项目后续不能保证更新，有需要的话，可以自行部署、修改或接着开发。</p>
+        <p>原理是<strong>收到 B 站推送后，立刻通知本机程序查一次私信</strong>。</p>
+        <ol>
+          <li><strong>连接 B 站。</strong> PagePup 用本机保存的 B 站登录凭据，直接建立 WebSocket 长连接并订阅私信通知。它定期发送心跳，断线后会尝试重连和重新订阅，所以浏览器可以关掉。</li>
+          <li><strong>识别通知。</strong> 这条连接也会收到心跳应答。PagePup 只处理匹配私信订阅路径的通知，并把 1 秒内连续到达的通知合成一次查信触发。</li>
+          <li><strong>唤醒接收端。</strong> PagePup 向配置好的本机地址发一个带令牌的 HTTP 请求。请求只表示「有新私信，请查一下」。肥鱼收到后，用自己的 B 站接入读取正文、核验发件人，再决定是否回复。</li>
+        </ol>
+      </section>
+      <section class="card">
+        <h2>水友交流群</h2>
+        <a class="group-link" href="https://qm.qq.com/q/J40Zj7ZL6C" target="_blank" rel="noopener noreferrer">
+          <span><strong>个人爱好交流群</strong><small>群号：527253264</small></span>
+          <span>打开 QQ →</span>
+        </a>
+      </section>
+    </div>
+  </section>
+</main>
+<section id="loginScreen" class="login-screen" aria-labelledby="loginTitle" hidden>
+  <div class="card login-card">
+    <div class="login-brand"><img src="/mascot.png" alt=""><h1 id="loginTitle">PagePup <span>WebUI 登录</span></h1></div>
+    <p>用哔哩哔哩 App 扫码，在手机上确认登录。</p>
+    <img id="loginQr" class="login-qr" alt="B 站登录二维码" hidden>
+    <button id="loginButton">生成登录二维码</button>
+    <p id="loginFeedback" role="status"></p>
+  </div>
+</section>
+<script>
+const byId = id => document.getElementById(id)
+const time = value => new Date(value).toLocaleTimeString('zh-CN', { hour12: false })
+const accountButton = byId('accountAction')
+const loginButton = byId('loginButton')
+let signedOut = false
+let changingSession = false
+let qrGeneration = 0
+let qrTimer
+function renderAccount(state) {
+  const changed = signedOut !== state.signedOut
+  signedOut = state.signedOut
+  byId('dashboardSidebar').hidden = signedOut
+  byId('dashboard').hidden = signedOut
+  byId('loginScreen').hidden = !signedOut
+  document.title = signedOut ? 'WebUI 登录 - PagePup' : 'PagePup WebUI'
+  if (signedOut && location.hash !== '#login') history.replaceState(null, '', '#login')
+  if (!signedOut && location.hash === '#login') {
+    clearTimeout(qrTimer)
+    qrGeneration++
+    byId('loginQr').hidden = true
+    loginButton.textContent = '生成登录二维码'
+    history.replaceState(null, '', '#overview')
+    selectPage()
+  }
+  if (signedOut && changed) {
+    if (byId('networkDialog').open) byId('networkDialog').close()
+    byId('loginTitle').setAttribute('tabindex', '-1')
+    byId('loginTitle').focus()
+  }
+  accountButton.disabled = changingSession
+  loginButton.disabled = changingSession
+  byId('accountName').textContent = state.account?.name ?? 'B 站账号'
+  byId('accountUid').textContent = state.account ? 'UID ' + state.account.uid : (signedOut ? '已退出登录' : '暂无账号信息')
+  const avatar = state.account?.avatar ?? '/mascot.png'
+  const image = byId('accountAvatar')
+  if (image.getAttribute('src') !== avatar && image.dataset.failed !== avatar) image.src = avatar
+}
+byId('accountAvatar').onerror = event => {
+  const image = event.currentTarget
+  image.dataset.failed = image.getAttribute('src')
+  if (image.dataset.failed !== '/mascot.png') image.src = '/mascot.png'
+}
+async function changeSession(action, feedback) {
+  if (changingSession) return
+  changingSession = true
+  accountButton.disabled = true
+  loginButton.disabled = true
+  feedback.textContent = ''
+  try {
+    const response = await fetch('/session/' + action, { method: 'POST' })
+    if (!response.ok) throw Error('账号操作失败')
+    renderAccount(await response.json())
+    await refresh()
+  } catch (error) { feedback.textContent = error.message }
+  finally {
+    changingSession = false
+    accountButton.disabled = false
+    loginButton.disabled = false
+  }
+}
+accountButton.onclick = () => {
+  if (confirm('退出 PagePup 的 B 站会话并停止本进程的私信监听？')) {
+    void changeSession('logout', byId('accountFeedback'))
+  }
+}
+const loginFeedback = byId('loginFeedback')
+async function qrRequest(action) {
+  const response = await fetch('/session/qr/' + action, { method: 'POST' })
+  const data = await response.json()
+  if (!response.ok) throw Error(data.error ?? '登录操作失败')
+  return data
+}
+async function pollQr(generation) {
+  if (!signedOut || generation !== qrGeneration) return
+  try {
+    const { state } = await qrRequest('poll')
+    if (generation !== qrGeneration) return
+    if (state === 'logged-in') {
+      await refresh()
+      return
+    }
+    if (state === 'expired') {
+      byId('loginQr').hidden = true
+      loginFeedback.textContent = '二维码已过期，请重新生成。'
+      return
+    }
+    if (state !== 'busy') loginFeedback.textContent = state === 'scanned' ? '已扫码，请在手机上确认。' : '等待扫码'
+    qrTimer = setTimeout(() => pollQr(generation), 2000)
+  } catch (error) {
+    if (generation === qrGeneration) loginFeedback.textContent = error.message
+  }
+}
+loginButton.onclick = async () => {
+  clearTimeout(qrTimer)
+  const generation = ++qrGeneration
+  loginButton.disabled = true
+  loginFeedback.textContent = '正在生成二维码…'
+  try {
+    const { state, image } = await qrRequest('start')
+    if (generation !== qrGeneration) return
+    if (state === 'logged-in') {
+      await refresh()
+      return
+    }
+    if (!image) throw Error('上一次请求仍在处理，请重试。')
+    const qr = byId('loginQr')
+    qr.src = image
+    qr.hidden = false
+    loginButton.textContent = '刷新二维码'
+    loginFeedback.textContent = '等待扫码'
+    qrTimer = setTimeout(() => pollQr(generation), 2000)
+  } catch (error) {
+    if (generation === qrGeneration) loginFeedback.textContent = error.message
+  } finally { loginButton.disabled = false }
+}
+function ring(id, value) {
+  byId(id).textContent = value === null ? '—' : value + '%'
+  byId(id + 'Ring').style.setProperty('--usage', (value ?? 0) + '%')
+}
+async function refresh() {
+  try {
+    const response = await fetch('/status')
+    if (!response.ok) throw Error()
+    const state = await response.json()
+    renderAccount(state)
+    byId('mode').textContent = state.probe ? '探测模式' : '转发模式'
+    byId('connection').textContent = state.connection
+    byId('notification').textContent = state.notification ? time(state.notification) : '暂无'
+    byId('forwarding').textContent = state.probe ? '探测模式不转发' : state.forwarding
+    byId('node').textContent = state.node
+    byId('system').textContent = state.system
+    ring('cpu', state.cpu)
+    ring('memory', Math.round(100 * state.used / state.total))
+    const gib = bytes => (bytes / 1024 ** 3).toFixed(1)
+    byId('memoryDetail').textContent = '内存 ' + gib(state.used) + ' / ' + gib(state.total) + ' GB'
+    if (state.events.length) byId('events').replaceChildren(...state.events.map(event => {
+      const row = document.createElement('div')
+      row.className = 'event'
+      const stamp = document.createElement('time')
+      stamp.dateTime = event.time
+      stamp.textContent = time(event.time)
+      const message = document.createElement('span')
+      message.textContent = event.message
+      row.append(stamp, message)
+      return row
+    }))
+  } catch {
+    byId('connection').textContent = '管理页连接中断'
+  }
+}
+const pages = ['overview', 'network', 'logs', 'about']
+function selectPage() {
+  if (signedOut) {
+    if (location.hash !== '#login') history.replaceState(null, '', '#login')
+    return
+  }
+  const page = pages.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview'
+  for (const id of pages) {
+    byId(id).hidden = id !== page
+    const link = document.querySelector('nav a[href="#' + id + '"]')
+    if (id === page) link.setAttribute('aria-current', 'page')
+    else link.removeAttribute('aria-current')
+  }
+  if (page === 'network') void loadCards()
+}
+const dialog = byId('networkDialog')
+const form = byId('networkForm')
+let editing
+function edit(entry) {
+  editing = entry?.id
+  byId('networkFormTitle').textContent = entry ? '编辑 HTTP 客户端' : '新建 HTTP 客户端'
+  form.elements.name.value = entry?.name ?? ''
+  form.elements.url.value = entry?.url ?? 'http://127.0.0.1:34568/bili/dm-wake'
+  form.elements.token.value = ''
+  form.elements.token.required = !entry?.hasToken
+  form.elements.token.placeholder = entry?.hasToken ? '留空保留当前令牌' : '64 位小写十六进制'
+  byId('networkError').textContent = ''
+  dialog.showModal()
+}
+async function requestNetwork(input) {
+  const response = await fetch('/network', input ? {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  } : {})
+  const data = await response.json()
+  if (!response.ok) throw Error(data.error ?? '请求失败')
+  return data
+}
+function element(tag, value, className) {
+  const item = document.createElement(tag)
+  if (value) item.textContent = value
+  if (className) item.className = className
+  return item
+}
+function renderCards(entries) {
+  byId('networkCards').replaceChildren(...(entries.length ? entries.map(entry => {
+    const card = element('article', '', 'card')
+    const title = element('div', '', 'network-title')
+    const toggle = element('button', entry.enabled ? '已启用' : '已停用', 'switch')
+    toggle.setAttribute('role', 'switch')
+    toggle.setAttribute('aria-checked', entry.enabled)
+    toggle.setAttribute('aria-label', '启用 ' + entry.name)
+    toggle.onclick = () => operate('toggle', entry, toggle)
+    title.append(element('h2', entry.name), toggle)
+    const details = element('dl')
+    for (const [label, value] of [['类型', 'HTTP 客户端'], ['接收地址', entry.url]]) {
+      const row = element('div')
+      row.append(element('dt', label), element('dd', value))
+      details.append(row)
+    }
+    const actions = element('div', '', 'actions')
+    for (const [action, label] of [['edit', '编辑'], ['test', '调试端口'], ['delete', '删除']]) {
+      const button = element('button', label, action === 'delete' ? 'danger' : '')
+      button.onclick = () => action === 'edit' ? edit(entry) : operate(action, entry, button)
+      actions.append(button)
+    }
+    card.append(title, details, actions)
+    return card
+  }) : [element('p', '暂无接收端，点击「新建」添加。', 'empty')]))
+}
+async function loadCards() {
+  try { renderCards((await requestNetwork()).entries) }
+  catch (error) { byId('networkFeedback').textContent = error.message }
+}
+async function operate(action, entry, button) {
+  if (action === 'delete' && !confirm('删除「' + entry.name + '」？')) return
+  button.disabled = true
+  try {
+    const data = await requestNetwork({ action, id: entry.id })
+    if (data.entries) renderCards(data.entries)
+    byId('networkFeedback').textContent = data.result ? entry.name + ' · ' + data.result : '配置已更新'
+  } catch (error) { byId('networkFeedback').textContent = error.message }
+  finally { button.disabled = false }
+}
+form.onsubmit = async event => {
+  event.preventDefault()
+  const button = form.querySelector('[type=submit]')
+  button.disabled = true
+  try {
+    const data = await requestNetwork({ action: 'save', id: editing, ...Object.fromEntries(new FormData(form)) })
+    renderCards(data.entries)
+    byId('networkFeedback').textContent = '配置已保存'
+    dialog.close()
+  } catch (error) { byId('networkError').textContent = error.message }
+  finally { button.disabled = false }
+}
+byId('newNetwork').onclick = () => edit()
+byId('reloadNetwork').onclick = loadCards
+byId('cancelNetwork').onclick = () => dialog.close()
+window.addEventListener('hashchange', selectPage)
+selectPage()
+awaitRefresh()
+async function awaitRefresh() {
+  await refresh()
+  setTimeout(awaitRefresh, 2000)
+}
+</script>
+</html>
