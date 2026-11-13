@@ -42,6 +42,7 @@ node bili-dm-listener.mjs --probe
 
 看到「B 站长连接已订阅」后，用另一个账号发一条测试私信。终端应显示「收到 B 站私信通知」。探测模式只记录通知。
 
+适合已部署大肥鱼的 Windows 用户。下载 PagePup-Windows-DSH.zip，全部解压后，进入 PagePup 文件夹并双击「启动 PagePup.bat」。首次启动需要联网安装依赖，浏览器打开后用哔哩哔哩 App 扫码登录。启动器会尝试识别系统盘或 E 盘根目录下的 DeepSeek Harness 安装。
 ## 接入本机程序
 
 1. 启动本机 HTTP 接收端，监听 `127.0.0.1:34568`。接收 `POST /bili/dm-wake`，校验 `Authorization: Bearer <token>`，接受后返回 HTTP 202。请求不携带私信正文。
